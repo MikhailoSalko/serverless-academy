@@ -7,36 +7,17 @@ import questionsFindUser from "./questionsFindUser.js";
 readline.emitKeypressEvents(process.stdin);
 if (process.stdin.isTTY) process.stdin.setRawMode(true);
 
-const enterName = () => {
+const enterName = async () => {
   let msg = "";
+  process.stdin.on("keypress", (str, key) => {
+    if (key.name === "return") {
+      console.log(str);
+    }
+  });
+  msg = await inquirer.prompt(questionsCreateUser);
 
-  inquirer
-    .prompt([
-      {
-        type: "input",
-        name: "name",
-        message: "Please, enter your name. To cancel press ENTER",
-      },
-    ])
-    .then((ans) => {
-      process.stdin.on("keypress", async (_, key) => {
-        if (key.name === "return") {
-          inquirer
-            .prompt([
-              {
-                type: "confirm",
-                name: "toSearchUser",
-                message: "Would you like to find user fy name?",
-                default: false,
-                transformer: (answer) => (answer ? "yes" : "no"),
-              },
-            ])
-            .then((ans) => {
-              console.log(ans);
-            });
-        }
-      });
-    });
+  // msg = await inquirer.prompt(questionsFindUser);
+  enterName();
 };
 
 enterName();
