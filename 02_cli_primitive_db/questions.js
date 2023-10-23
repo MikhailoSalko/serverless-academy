@@ -1,4 +1,4 @@
-const questions = [
+const questionsCreateUser = [
   {
     type: "input",
     name: "name",
@@ -19,11 +19,19 @@ const questions = [
   },
   {
     type: "confirm",
-    name: "searchUserName",
+    name: "getSearch",
     message: "Would you like to find user fy name?",
     when: (answers) => answers.name === "",
     transformer: (answer) => (answer ? "yes" : "no"),
   },
 ];
 
-export default questions;
+const questionsFindUser = [
+  {
+    type: "input",
+    name: "name",
+    message: "Enter user's name you want to find in DB: ",
+  },
+];
+
+export default { questionsCreateUser, questionsFindUser };
