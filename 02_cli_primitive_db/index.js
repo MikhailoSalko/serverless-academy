@@ -1,16 +1,22 @@
 import inquirer from "inquirer";
-import fs from "fs/promises";
 import questions from "./questions.js";
+import { usersFunc } from "./users/index.js";
 
 const enterName = async () => {
   let msg = {};
-  msg = await inquirer.prompt(questions);
+  msg = await inquirer.prompt(questions.questionsCreateUser);
   if (msg.name === "") {
-    console.log("You skipped entering your name.");
+    const users = await usersFunc.listOfUsers();
+    console.log(users);
+    msg = await inquirer.prompt(questions.questionsFindUser);
+    const foundedUser = await usersFunc.getUserByName(msg.name);
+    !foundedUser
+      ? console.log("We didn't find such user, please, try again")
+      : console.log(`We found user ${msg.name}:\n`, foundedUser);
   } else if (msg.name !== "") {
-    console.log(`Your name ${msg.name}`);
+    await usersFunc.addUser(msg);
+    enterName();
   }
-  // console.log(msg);
 };
 
 enterName();
