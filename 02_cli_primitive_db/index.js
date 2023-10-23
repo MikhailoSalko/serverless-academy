@@ -6,6 +6,10 @@ const enterName = async () => {
   let msg = {};
   msg = await inquirer.prompt(questions.questionsCreateUser);
   if (msg.name === "") {
+    if (msg.getSearch === "no") {
+      console.log("Good buy. Come again.");
+      process.exit(0);
+    }
     const users = await usersFunc.listOfUsers();
     console.log(users);
     msg = await inquirer.prompt(questions.questionsFindUser);
