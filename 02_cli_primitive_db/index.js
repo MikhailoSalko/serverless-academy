@@ -1,23 +1,16 @@
 import inquirer from "inquirer";
 import fs from "fs/promises";
-import readline from "readline";
-import questionsCreateUser from "./questionsCreateUser.js";
-import questionsFindUser from "./questionsFindUser.js";
-
-readline.emitKeypressEvents(process.stdin);
-if (process.stdin.isTTY) process.stdin.setRawMode(true);
+import questions from "./questions.js";
 
 const enterName = async () => {
-  let msg = "";
-  process.stdin.on("keypress", (str, key) => {
-    if (key.name === "return") {
-      console.log(str);
-    }
-  });
-  msg = await inquirer.prompt(questionsCreateUser);
-
-  // msg = await inquirer.prompt(questionsFindUser);
-  enterName();
+  let msg = {};
+  msg = await inquirer.prompt(questions);
+  if (msg.name === "") {
+    console.log("You skipped entering your name.");
+  } else if (msg.name !== "") {
+    console.log(`Your name ${msg.name}`);
+  }
+  // console.log(msg);
 };
 
 enterName();
