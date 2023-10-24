@@ -1,24 +1,17 @@
 import { program } from "commander";
-import contactsApi from "./contacts.js";
 
-const invokeAction = async ({ action, id, name, email, phone }) => {
+const invokeAction = async ({ action, message, photo, help }) => {
   switch (action) {
-    case "list":
-      const allContacts = await contactsApi.listContacts();
-      return console.log(allContacts);
-
-    case "get":
-      const oneContactById = await contactsApi.getContactById(id);
-      return console.log(oneContactById);
-
-    case "add":
-      const newContact = await contactsApi.addContact({ name, email, phone });
-      return console.log(newContact);
-
-    case "remove":
-      const deletedContact = await contactsApi.removeContact(id);
-      return console.log(deletedContact);
-
+    case "message":
+      return console.log("this is message");
+    case "m":
+      return console.log("this is message");
+    case "photo":
+      return console.log("this is photo");
+    case "p":
+      return console.log("this is photo");
+    case "--help":
+      return console.log("these are all commands");
     default:
       console.warn("\x1B[31m Unknown action type!");
   }
@@ -26,10 +19,9 @@ const invokeAction = async ({ action, id, name, email, phone }) => {
 
 program
   .option("-a, --action <type>", "choose action")
-  .option("-i, --id <type>", "user id")
-  .option("-n, --name <type>", "user name")
-  .option("-e, --email <type>", "user email")
-  .option("-p, --phone <type>", "user phone");
+  .option("-m, --message <type>", "user message")
+  .option("-p, --photo <type>", "path to photo")
+  .option("-h, --help");
 
 program.parse();
 
