@@ -6,7 +6,7 @@ const { TELEGRAM_TOKEN } = process.env;
 
 const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
 
-const getUpdates = async () => {
+const getId = async () => {
   const [
     {
       message: {
@@ -18,47 +18,29 @@ const getUpdates = async () => {
   return id;
 };
 
-const invokeAction = async ({ message, photo, help }) => {
+const invokeAction = async ({ message, photo }) => {
   if (message) {
-    const id = await getUpdates();
+    const id = await getId();
     await bot.sendMessage(id, message);
     process.exit(0);
   }
   if (photo) {
-    const id = await getUpdates();
+    const id = await getId();
     await bot.sendPhoto(id, photo);
     console.log("You sent a photo to your bot");
     process.exit(0);
   }
-  if (help) {
-    program
-      .name("cli_telegram_bot")
-      .description("CLI app for telegram bot to display messages and photos")
-      .option("--first", "display just the first substring")
-      .option("-s, --separator <char>", "separator character", ",");
-
-    // program
-    //   .command("split")
-    // .description("Split a string into substrings and display as an array")
-
-    // .action((str, options) => {
-    //   const limit = options.first ? 1 : undefined;
-    //   console.log(str.split(options.separator, limit));
-    // });
-
-    program.parse();
+  if (!message || !photo) {
+    console.log("Unknow action, try `node index.js -h` to see the help menu");
     process.exit(0);
-  }
-  if (!message && !photo && !help) {
-    console.warn("\x1B[31m Unknown action type!");
-    process.exit(1);
   }
 };
 
 program
+  .name("cli_telegram_bot_display")
+  .description("CLI app for telegram bot to display messages and photos")
   .option("-m, --message <type>", "user message")
-  .option("-p, --photo <type>", "path to photo")
-  .option("-h, --help", "display commands");
+  .option("-p, --photo <type>", "path to photo");
 
 program.parse();
 
