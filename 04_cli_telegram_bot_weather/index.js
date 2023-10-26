@@ -1,73 +1,63 @@
-import weatherInstance from "./api/instance.js";
-import TelegramBot from "node-telegram-bot-api";
-
-const ZAPORIZHIA = "Zaporizhia";
-
-const { TELEGRAM_TOKEN } = process.env;
-
-const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
-
-const cityButton = {
-  reply_markup: JSON.stringify({
-    inline_keyboard: [[{ text: ZAPORIZHIA, callback_data: ZAPORIZHIA }]],
-  }),
-};
-
-const timeButtons = {
-  reply_markup: JSON.stringify({
-    inline_keyboard: [
-      [
-        { text: "every 3 hours", callback_data: "3" },
-        { text: "every 6 hours", callback_data: "6" },
-      ],
-    ],
-  }),
-};
+import { telegramBot, forecast } from "./api/index.js";
+import { markup } from "./helpers/index.js";
+const { ZAPORIZHIA } = process.env;
 
 const weatherBot = () => {
-  bot.setMyCommands([{ command: "/start", description: "Start the weather bot" }]);
+  telegramBot.bot.setMyCommands([{ command: "/start", description: "Start the weather bot" }]);
 
-  bot.on("message", (msg) => {
+  telegramBot.bot.on("message", (msg) => {
     const {
+      text,
       chat: { id },
     } = msg;
 
-    return bot.sendMessage(id, "Hello to weather bot. Choose the city below.", cityButton);
+    if (text === "/start") {
+      return telegramBot.bot.sendMessage(
+        id,
+        "Hello to weather bot. Choose the city below.",
+        telegramBot.cityButton
+      );
+    }
+    return telegramBot.bot.sendMessage(id, "I don't understand your command");
   });
 
-  bot.on("callback_query", async (msg) => {
+  telegramBot.bot.on("callback_query", async (msg) => {
     const {
       message: {
         chat: { id },
       },
       data,
     } = msg;
+
     if (data === ZAPORIZHIA) {
-      await bot.sendMessage(
+      await telegramBot.bot.sendMessage(
         id,
         "Choose at what interval you want to receive the weather forecast for the city of Zaporizhia",
-        timeButtons
+        telegramBot.timeButtons
       );
       return;
     }
+
     if (data === "3") {
-      await bot.sendMessage(id, "You choose the interval in 3 hours");
-      return;
+      const { list } = await forecast(data);
+      return telegramBot.bot.sendMessage(
+        id,
+        `Here is the 3 hours interval weather forecast in Zaporizhia: 
+        ${markup(list)}
+        Would you like to choose another interval?`,
+        telegramBot.timeButtons
+      );
     } else if (data === "6") {
-      await bot.sendMessage(id, "You choose the interval in 6 hours");
-      return;
+      const list = await forecast(data);
+      return telegramBot.bot.sendMessage(
+        id,
+        `Here is the 6 hours interval weather forecast in Zaporizhia:
+        ${markup(list)}
+        Would you like to choose another interval?`,
+        telegramBot.timeButtons
+      );
     }
   });
 };
-
-const forecast = async () => {
-  const { data } = await weatherInstance.get();
-  // console.log(data);
-  // return forecast;
-};
-
-// console.log(forecast());
-
-// forecast();
 
 weatherBot();
