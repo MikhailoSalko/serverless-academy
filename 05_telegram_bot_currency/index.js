@@ -5,16 +5,23 @@ import { USD, EUR } from "./constans.js";
 
 const myCache = new NodeCache();
 
+let currency = [];
+
 const telegramBotMain = () => {
   telegramBot.bot.setMyCommands([{ command: "/start", description: "Start the currency bot" }]);
 
-  telegramBot.bot.on("message", (msg) => {
+  telegramBot.bot.on("message", async (msg) => {
     const {
       text,
       chat: { id },
     } = msg;
 
     if (text === "/start") {
+      const currencyCache = myCache.get("currency");
+      if (!currencyCache) {
+        currency = await getCurrencyExchange();
+        myCache.set("currency", currency, 60);
+      }
       return telegramBot.bot.sendMessage(
         id,
         "Welcome to the currency bot. Please, choose the currency whose exchange rate you want to receive.",
@@ -25,7 +32,7 @@ const telegramBotMain = () => {
   });
 
   telegramBot.bot.on("callback_query", async (msg) => {
-    let currency = [];
+    let cache;
     const {
       message: {
         chat: { id },
@@ -38,17 +45,15 @@ const telegramBotMain = () => {
         return telegramBot.bot.sendMessage(id, "Choose a currency.", telegramBot.bankButton);
 
       case USD:
-        const valueDollar = myCache.get("dol");
-        console.log(valueDollar);
-        if (valueDollar === undefined) {
+        cache = myCache.get("currency");
+        if (!cache) {
           currency = await getCurrencyExchange();
-          const dol = [currency[1], currency[2]];
-          const dollar = myCache.set("dol", dol, 60);
-          const dolCache = myCache.get("dol");
+          myCache.set("currency", currency, 60);
+          const { dollar } = myCache.get("currency");
           return telegramBot.bot.sendMessage(
             id,
             `Here is the current dollar exchange rate of a privat bank and a monobank: ${markup(
-              dolCache
+              dollar
             )}`,
             telegramBot.previousButton
           );
@@ -56,22 +61,21 @@ const telegramBotMain = () => {
         return telegramBot.bot.sendMessage(
           id,
           `Here is the current dollar exchange rate of a privat bank and a monobank: ${markup(
-            valueDollar
+            cache.dollar
           )}`,
           telegramBot.previousButton
         );
 
       case EUR:
-        const valueEuro = myCache.get("eur");
-        if (valueEuro === undefined) {
+        cache = myCache.get("currency");
+        if (!cache) {
           currency = await getCurrencyExchange();
-          const eur = [currency[0], currency[3]];
-          const euro = myCache.set("eur", eur, 60);
-          const eurCache = myCache.get("eur");
+          myCache.set("currency", currency, 60);
+          const { euro } = myCache.get("currency");
           return telegramBot.bot.sendMessage(
             id,
             `Here is the current euro exchange rate of a privat bank and a monobank: ${markup(
-              eurCache
+              euro
             )}`,
             telegramBot.previousButton
           );
@@ -79,7 +83,7 @@ const telegramBotMain = () => {
         return telegramBot.bot.sendMessage(
           id,
           `Here is the current euro exchange rate of a privat bank and a monobank: ${markup(
-            valueEuro
+            cache.euro
           )}`,
           telegramBot.previousButton
         );
