@@ -1,5 +1,4 @@
 import axios from "axios";
-import { USD, EUR } from "../constans.js";
 
 const { PRIVATBANK_API, MONOBANK_API } = process.env;
 

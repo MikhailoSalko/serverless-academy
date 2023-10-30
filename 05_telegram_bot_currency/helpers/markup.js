@@ -8,9 +8,9 @@ const markup = (list) => {
       };
       return `
     -----------------------------------------------------------
-    Base currecy:  ${obj.UAH}         Sale                Buy
+    Base currecy:  ${obj.UAH}        Sale                Buy
     PrivatBank:               ${obj.sale}       ${obj.sale}
-    Monomank:              ${obj.buy}        ${obj.buy}
+    Monomank:               ${obj.buy}         ${obj.buy}
     -----------------------------------------------------------
     `;
     })

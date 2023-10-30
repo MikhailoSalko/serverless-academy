@@ -1,6 +1,9 @@
 import { telegramBot, getCurrencyExchange } from "./api/index.js";
+import NodeCache from "node-cache";
 import { markup } from "./helpers/index.js";
 import { USD, EUR } from "./constans.js";
+
+const myCache = new NodeCache();
 
 const telegramBotMain = () => {
   telegramBot.bot.setMyCommands([{ command: "/start", description: "Start the currency bot" }]);
@@ -22,6 +25,7 @@ const telegramBotMain = () => {
   });
 
   telegramBot.bot.on("callback_query", async (msg) => {
+    let currency = [];
     const {
       message: {
         chat: { id },
@@ -29,26 +33,59 @@ const telegramBotMain = () => {
       data,
     } = msg;
 
-    if (data === "back") {
-      return telegramBot.bot.sendMessage(id, "Choose a currency.", telegramBot.bankButton);
-    }
+    switch (data) {
+      case "back":
+        return telegramBot.bot.sendMessage(id, "Choose a currency.", telegramBot.bankButton);
 
-    if (data === USD) {
-      const currency = await getCurrencyExchange();
-      const dol = [currency[1], currency[2]];
-      return telegramBot.bot.sendMessage(
-        id,
-        `Here is the current dollar exchange rate of a privat bank and a monobank: ${markup(dol)}`,
-        telegramBot.previousButton
-      );
-    } else if (data === EUR) {
-      const currency = await getCurrencyExchange();
-      const eur = [currency[0], currency[3]];
-      return telegramBot.bot.sendMessage(
-        id,
-        `Here is the current euro exchange rate of a privat bank and a monobank: ${markup(eur)}`,
-        telegramBot.previousButton
-      );
+      case USD:
+        const valueDollar = myCache.get("dol");
+        console.log(valueDollar);
+        if (valueDollar === undefined) {
+          currency = await getCurrencyExchange();
+          const dol = [currency[1], currency[2]];
+          const dollar = myCache.set("dol", dol, 60);
+          const dolCache = myCache.get("dol");
+          return telegramBot.bot.sendMessage(
+            id,
+            `Here is the current dollar exchange rate of a privat bank and a monobank: ${markup(
+              dolCache
+            )}`,
+            telegramBot.previousButton
+          );
+        }
+        return telegramBot.bot.sendMessage(
+          id,
+          `Here is the current dollar exchange rate of a privat bank and a monobank: ${markup(
+            valueDollar
+          )}`,
+          telegramBot.previousButton
+        );
+
+      case EUR:
+        const valueEuro = myCache.get("eur");
+        if (valueEuro === undefined) {
+          currency = await getCurrencyExchange();
+          const eur = [currency[0], currency[3]];
+          const euro = myCache.set("eur", eur, 60);
+          const eurCache = myCache.get("eur");
+          return telegramBot.bot.sendMessage(
+            id,
+            `Here is the current euro exchange rate of a privat bank and a monobank: ${markup(
+              eurCache
+            )}`,
+            telegramBot.previousButton
+          );
+        }
+        return telegramBot.bot.sendMessage(
+          id,
+          `Here is the current euro exchange rate of a privat bank and a monobank: ${markup(
+            valueEuro
+          )}`,
+          telegramBot.previousButton
+        );
+
+      default:
+        return telegramBot.bot.sendMessage(id, "Choose a currency.", telegramBot.bankButton);
     }
   });
 };
